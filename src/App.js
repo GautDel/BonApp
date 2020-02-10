@@ -105,6 +105,7 @@ class App extends Component {
 
   // Initialize and update map
   getMapHandler = () => {
+    const { mapLoaded, restaurants, latPos, longPos, reset, placesFetched, restaurantAdded, originalMarkers, restaurantMarkers, } = this.state
     let visibleRestaurants = []; //Visible restaurants on map at any given time
     let restaurantMarkers = []; // Markers for visible restaurants;
     let restaurantSet; // Creates a set of unique restaraurants (stops duplicate restaurants from being created)
@@ -112,19 +113,19 @@ class App extends Component {
 
     if (
       // Map will load if conditions are met
-      this.state.mapLoaded === false &&
-      this.state.restaurants.length > 0 &&
-      this.state.latPos !== null &&
-      this.state.longPos !== null
+      mapLoaded === false &&
+      restaurants.length > 0 &&
+      latPos !== null &&
+      longPos !== null
     ) {
       this.setState({
         map: (
           <AppMap
-            center={{ lat: this.state.latPos, long: this.state.longPos }}
+            center={{ lat: latPos, long: longPos }}
             onMapLoad={map => {
               // Create Marker for user position
               var marker = new window.google.maps.Marker({
-                position: { lat: this.state.latPos, lng: this.state.longPos },
+                position: { lat: latPos, lng: longPos },
                 map: map,
                 icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
                 title: "You"
@@ -139,8 +140,8 @@ class App extends Component {
 
                 setInterval(() => {
                   // Checking whether or not the condition is true every 100 milliseconds
-                  if (this.state.reset === true) {
-                    this.state.originalMarkers.forEach(marker => {
+                  if (reset === true) {
+                    originalMarkers.forEach(marker => {
                       // Resetting markers on map when filter options are reset
                       marker.setMap(map);
                     });
@@ -161,19 +162,19 @@ class App extends Component {
                 setTimeout(() => {
                   //Using set time out to allow time for information to be fetched from Places and database.
                   if (
-                    this.state.restaurantsInitialized === false &&
-                    this.state.placesFetched === true
+                    restaurantsInitialized === false &&
+                    placesFetched === true
                   ) {
                     // Initialize restaurants and set markers
                     this.setState({
                       restaurants: [
-                        ...this.state.finalPlaces,
-                        ...this.state.restaurants
+                        ...finalPlaces,
+                        ...restaurants
                       ],
                       restaurantsInitialized: true
                     });
 
-                    this.state.restaurants.forEach(restaurant => {
+                    restaurants.forEach(restaurant => {
                       this.setState(prevState => ({
                         //set state to be the current state + new state.
                         restaurantMarkers: [
@@ -184,16 +185,16 @@ class App extends Component {
                     });
                   }
 
-                  this.state.restaurantMarkers.forEach(marker => {
+                  restaurantMarkers.forEach(marker => {
                     restaurantMarkers.push(marker);
                   });
 
                   // Returns the lat/lng bounds of the current viewport allowing us to search for and display restaurants
                   let bounds = map.getBounds();
 
-                  this.state.restaurantMarkers.forEach(marker => {
+                  restaurantMarkers.forEach(marker => {
                     //For each marker
-                    this.state.restaurants.forEach(restaurant => {
+                    restaurants.forEach(restaurant => {
                       //For each restaurant
                       visibleRestaurants.forEach((restaurant, i) => {
                         //For each visible restaurant
@@ -234,8 +235,8 @@ class App extends Component {
                 window.google.maps.event.addListener(map, "idle", () => {
                   let bounds = map.getBounds();
 
-                  this.state.restaurantMarkers.forEach(marker => {
-                    this.state.restaurants.forEach(restaurant => {
+                  restaurantMarkers.forEach(marker => {
+                    restaurants.forEach(restaurant => {
                       visibleRestaurants.forEach((restaurant, i) => {
                         if (
                           restaurant._id === marker.id &&
@@ -264,16 +265,16 @@ class App extends Component {
 
                 setInterval(() => {
                   //Checking to see if restaurant has been added.
-                  if (this.state.restaurantAdded) this.getRestaurantsHandler();
+                  if (restaurantAdded) this.getRestaurantsHandler();
                 }, 1);
 
                 setInterval(() => {
                   if (
                     //If restaurant has been added, add restaurant to state array and render.
-                    this.state.markerAdded === false &&
-                    this.state.restaurantAdded === true
+                    markerAdded === false &&
+                    restaurantAdded === true
                   ) {
-                    this.state.restaurants.forEach(restaurant => {
+                    restaurants.forEach(restaurant => {
                       this.setState(prevState => ({
                         restaurantMarkers: [
                           ...prevState.restaurantMarkers,
@@ -305,7 +306,7 @@ class App extends Component {
                   createRestaurant: true
                 });
 
-                if (this.state.createRestaurant) {
+                if (createRestaurant) {
                   // Resetting markers so a new one may be added without causing duplicates.
                   this.resetMarkers();
                 }
